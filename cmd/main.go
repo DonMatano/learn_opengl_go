@@ -22,6 +22,7 @@ var framebufferSizeCallback glfw.FramebufferSizeCallback = func(window *glfw.Win
 
 func processInput(window *glfw.Window) {
 	if window.GetKey(glfw.KeyEscape) == glfw.Press {
+		fmt.Println("Closing window...")
 		window.SetShouldClose(true)
 	}
 }
@@ -105,10 +106,15 @@ func main() {
 	// vertices
 	triangleVertices := []float32{
 		// x, y, z
-		-0.5, -0.5, 0, // left
-		0.5, -0.5, 0, // right
-		0, 0.5, 0, // top
+		0.5, 0.5, 0, // top right
+		0.5, -0.5, 0, // bottom right
+		-0.5, -0.5, 0, // bottom left
+		-0.5, 0.5, 0, // top left
+	}
 
+	indices := []uint32{
+		0, 1, 3,
+		1, 2, 3,
 	}
 
 	// configure the vertex data
@@ -121,8 +127,16 @@ func main() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(triangleVertices)*4, gl.Ptr(triangleVertices), gl.STATIC_DRAW)
 
+	var ebo uint32
+	gl.GenBuffers(1, &ebo)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*4, gl.Ptr(indices), gl.STATIC_DRAW)
+
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3*4, gl.Ptr(nil))
 	gl.EnableVertexAttribArray(0)
+
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gl.BindVertexArray(0)
 
 	// vertexShader
 
@@ -152,6 +166,8 @@ func main() {
 		panic(err)
 	}
 	gl.UseProgram(program)
+	// Wireframe
+	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
 	for !window.ShouldClose() {
 		// input
@@ -159,12 +175,15 @@ func main() {
 		// render
 		gl.ClearColor(0.2, 0.3, 0.3, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.DrawArrays(gl.TRIANGLES, 0, 3)
+		gl.BindVertexArray(vao)
+		// gl.DrawArrays(gl.TRIANGLES, 0, 3)
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, gl.Ptr(nil))
 
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
 	gl.DeleteVertexArrays(1, &vao)
 	gl.DeleteBuffers(1, &vbo)
+	gl.DeleteBuffers(1, &ebo)
 	gl.DeleteProgram(program)
 }
