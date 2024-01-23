@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"runtime"
 	"strings"
 
@@ -148,7 +149,6 @@ func main() {
 
   void main() {
     gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); 
-    vertexColor = vec4(0.5, 0.0, 0.0, 1.0);
   }
 ` + shaderEndChar
 	compileShader(vertexShaderSource, gl.VERTEX_SHADER)
@@ -158,9 +158,9 @@ func main() {
 	fragmentShaderSource := `
   #version 330 core
   out vec4 FragColor;
-  in vec4 vertexColor;
+  uniform vec4 ourColour;
   void main() {
-    FragColor = vertexColor;
+    FragColor = ourColour;
   }
 ` + shaderEndChar
 
@@ -168,7 +168,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	gl.UseProgram(program)
 	// Wireframe
 	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
@@ -178,6 +177,12 @@ func main() {
 		// render
 		gl.ClearColor(0.2, 0.3, 0.3, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.UseProgram(program)
+		// update uniform ourColour
+		timeValue := glfw.GetTime()
+		greenValue := math.Sin(timeValue)
+		vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColour"+shaderEndChar))
+		gl.Uniform4f(vertexColorLocation, 0, float32(greenValue), 0, 1)
 		gl.BindVertexArray(vao)
 		// gl.DrawArrays(gl.TRIANGLES, 0, 3)
 		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, gl.Ptr(nil))
