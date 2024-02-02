@@ -14,7 +14,7 @@ type shader struct {
 
 func compileShader(source string, shaderType uint32) (uint32, error) {
 	shader := gl.CreateShader(shaderType)
-	sourceInC, free := gl.Strs(source)
+	sourceInC, free := gl.Strs(source + "\x00")
 	gl.ShaderSource(shader, 1, sourceInC, nil)
 	free()
 	gl.CompileShader(shader)
@@ -54,7 +54,7 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 		gl.GetProgramiv(program, gl.INFO_LOG_LENGTH, &logLength)
 		log := strings.Repeat("\x00", int(logLength+1))
 		gl.GetProgramInfoLog(program, logLength, nil, gl.Str(log))
-		return 0, fmt.Errorf("failed to link program: %v", log)
+		return 0, fmt.Errorf("failed to link program:\n %v", log)
 	}
 
 	gl.DeleteShader(vertexShader)

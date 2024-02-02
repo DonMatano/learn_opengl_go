@@ -38,6 +38,7 @@ func main() {
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
 	glfw.WindowHint(glfw.ContextVersionMinor, 3)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
 	window, err := glfw.CreateWindow(800, 600, "Learn Open GL", nil, nil)
 	if err != nil {
@@ -49,6 +50,9 @@ func main() {
 	if err := gl.Init(); err != nil {
 		log.Fatalln("Failed to start gl", err)
 	}
+
+	version := gl.GoStr(gl.GetString(gl.VERSION))
+	log.Printf("Running opengl Version %s", version)
 	gl.Viewport(0, 0, 800, 600)
 	window.SetFramebufferSizeCallback(framebufferSizeCallback)
 
@@ -81,7 +85,7 @@ func main() {
 
 	shader, err := openglshader.NewShader("shaders/vertexShader.glsl", "shaders/fragmentShader.glsl")
 	if err != nil {
-		log.Printf("Error getting Shader: %v", err)
+		log.Printf("Error getting Shader: \n %v", err)
 	}
 
 	// configure the vertex data
