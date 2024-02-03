@@ -129,7 +129,7 @@ func main() {
 		log.Fatalln("Failed to load texture", err)
 	}
 	log.Println("data received", data.Rect.Size())
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, int32(data.Rect.Size().X), int32(data.Rect.Size().Y), 0, gl.RGB, gl.UNSIGNED_BYTE, gl.Ptr(data.Pix))
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(data.Rect.Size().X), int32(data.Rect.Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(data.Pix))
 	gl.GenerateMipmap(gl.TEXTURE_2D)
 	log.Println("Generated MipMap")
 	// gl.BindBuffer(gl.ARRAY_BUFFER, 0)

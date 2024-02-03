@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func LoadImage(filePath string) (*image.NRGBA, error) {
+func LoadImage(filePath string) (*image.RGBA, error) {
 	imgFile, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read file in path %s, got error %v", filePath, err)
@@ -21,7 +21,7 @@ func LoadImage(filePath string) (*image.NRGBA, error) {
 	if err != nil {
 		return nil, err
 	}
-	rgb := image.NewNRGBA(img.Bounds())
+	rgb := image.NewRGBA(img.Bounds())
 	if rgb.Stride != rgb.Rect.Size().X*4 {
 		return nil, fmt.Errorf("unsupported stride")
 	}
