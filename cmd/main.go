@@ -8,6 +8,7 @@ import (
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
+	externallibs "github.com/DonMatano/learnOpenGLGo/externalLibs"
 	"github.com/DonMatano/learnOpenGLGo/lib"
 	openglshader "github.com/DonMatano/learnOpenGLGo/openGlShader"
 )
@@ -82,6 +83,7 @@ func main() {
 		0, 1, 3, // first triangle
 		1, 2, 3, // second triangle
 	}
+	shaderEndChar := "\x00"
 
 	shader, err := openglshader.NewShader("shaders/vertexShader.glsl", "shaders/fragmentShader.glsl")
 	if err != nil {
@@ -124,18 +126,42 @@ func main() {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	// load image, create texture and generate mipmaps
-	data, err := lib.LoadImage("resources/textures/container.jpg")
+	imagingLib := externallibs.NewImagingLib()
+	data, err := lib.LoadImage(imagingLib, "resources/textures/container.jpg")
 	if err != nil {
 		log.Fatalln("Failed to load texture", err)
 	}
-	log.Println("data received", data.Rect.Size())
+
+	data = lib.FlipImage(data, imagingLib)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(data.Rect.Size().X), int32(data.Rect.Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(data.Pix))
 	gl.GenerateMipmap(gl.TEXTURE_2D)
-	log.Println("Generated MipMap")
+
+	// Load smilling png
+	var smilingFaceTexture uint32
+	gl.GenTextures(1, &smilingFaceTexture)
+	gl.BindTexture(gl.TEXTURE_2D, smilingFaceTexture)
+	// Set texture wrapping
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	// Set texture filtering
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	// load image, create texture and generate mipmaps
+	data, err = lib.LoadImage(imagingLib, "resources/textures/awesomeface.png")
+	if err != nil {
+		log.Fatalln("Failed to load texture", err)
+	}
+	data = lib.FlipImage(data, imagingLib)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(data.Rect.Size().X), int32(data.Rect.Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(data.Pix))
+	gl.GenerateMipmap(gl.TEXTURE_2D)
 	// gl.BindBuffer(gl.ARRAY_BUFFER, 0)
 	// gl.BindVertexArray(0)
 	// Wireframe
 	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+	shader.Use()
+
+	gl.Uniform1i(gl.GetUniformLocation(shader.ID(), gl.Str("texture1"+shaderEndChar)), 0)
+	gl.Uniform1i(gl.GetUniformLocation(shader.ID(), gl.Str("texture2"+shaderEndChar)), 1)
 
 	for !window.ShouldClose() {
 		// input
@@ -145,7 +171,10 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		// bind Texture
+		gl.ActiveTexture(gl.TEXTURE0)
 		gl.BindTexture(gl.TEXTURE_2D, texture)
+		gl.ActiveTexture(gl.TEXTURE1)
+		gl.BindTexture(gl.TEXTURE_2D, smilingFaceTexture)
 
 		shader.Use()
 

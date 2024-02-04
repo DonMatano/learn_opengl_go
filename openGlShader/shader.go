@@ -88,3 +88,7 @@ func (sh *shader) Use() {
 func (sh *shader) Delete() {
 	gl.DeleteProgram(sh.progId)
 }
+
+func (sh shader) ID() uint32 {
+	return sh.progId
+}
